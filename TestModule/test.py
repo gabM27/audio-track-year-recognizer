@@ -7,26 +7,68 @@
 '''
 
 ##############################################################################
-class ComponenteGruppo:
-    def __init__(self, nome, cognome, email, matricola):
-        self.nome = nome
-        self.cognome = cognome
-        self.email = email
-        self.matricola = matricola            
+# Teachers' example:
+'''
+MY_UNIQUE_ID = "343435631"
+
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.linear_model import LinearRegression
+from sklearn.svm import SVR
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import mean_absolute_percentage_error
+from sklearn.metrics import r2_score
+import pickle
+
+# Output: unique ID of the team
+def getName():
+    return MY_UNIQUE_ID
+
+# Input: Test dataframe
+# Output: PreProcessed test dataframe
+def preprocess(df, clfName):
+    if ((clfName == "lr") or (clfName == "svr")):
+        X = df.iloc[:, :5]
+        y = df.iloc[:, 5]
+        scaler = pickle.load(open("scaler.save", 'rb'))
+        X = pd.DataFrame(scaler.transform(X))
+        dfNew = pd.concat([X, y], axis = 1)
+        return dfNew
+
+# Input: Regressor name ("lr": Linear Regression, "SVR": Support Vector Regressor)
+# Output: Regressor object
+def load(clfName):
+    if (clfName == "lr"):
+        clf = pickle.load(open("regression.save", 'rb'))
+        return clf
+    elif (clfName == "svr"):
+        clf = pickle.load(open("svr.save", 'rb'))
+        return clf
+    else:
+        return None
+    
+# Input: PreProcessed dataset, Regressor Name, Regressor Object 
+# Output: Performance dictionary
+def predict(df, clfName, clf):
+    X = df.iloc[:, :5]
+    y = df.iloc[:, 5]
+    ypred = clf.predict(X)
+    mse = mean_squared_error(ypred, y)
+    mae = mean_absolute_error(ypred, y)
+    mape = mean_absolute_percentage_error(ypred, y)
+    r2 = r2_score(ypred, y)
+    perf = {"mse": mse, "mae": mae, "mape": mape, "r2square": r2}
+    return perf
+'''
 
 ##############################################################################
-def getName():
-    componente1 = ComponenteGruppo("Andrea","Bianchi", "andrea.bianchi26@studio.unibo.it", "0001100494") 
-    componente2 = ComponenteGruppo("Gabriele","Magazzù", "gabriele.magazzu@studio.unibo.it", "0001102322")
-    
-    nome_gruppo = "Pair Forza"
-    
-    output = f"Nome gruppo: {nome_gruppo}\nComponenti del gruppo:\n{componente1.nome} {componente1.cognome} ({componente1.email}, {componente1.matricola})\n{componente2.nome} {componente2.cognome} ({componente2.email}, {componente2.matricola})"
 
-    return output
-    
-    
-    
+MY_UNIQUE_ID = "Pair Forza"
+# Output: unique ID of the team
+def getName():
+    return MY_UNIQUE_ID
+
+
 ##############################################################################
 # versione iniziale, da cambiare
 
