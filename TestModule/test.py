@@ -2,7 +2,7 @@
  Codice che implementa 4 funzioni Python:
     1. getName() --> restituisce un identificativo dello studente o del gruppo.
     2. preprocess(df, clfName) --> effettua il pre-processing dei dati di test forniti in input.
-    3. load(clfName) --> istanzia la tecnica di ML con nome clfName.
+    3. load(clfName) --> istanzia la tecnica di ML con nome clfName.(LR, RF, KNR, SVR, FF, TB, TF)
     4. predict(df, clfName, clf) --> esegue il modello ML (oggetto clf) sui dati di TEST preprocessati (df)
 '''
 
@@ -63,7 +63,7 @@ def predict(df, clfName, clf):
 
 ##############################################################################
 
-MY_UNIQUE_ID = "Pair Forza"
+MY_UNIQUE_ID = "Pair Forza" #Tocca dai, dai dai! Si va a LETTOOOOOOH
 # Output: unique ID of the team
 def getName():
     return MY_UNIQUE_ID

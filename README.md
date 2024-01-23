@@ -1,8 +1,14 @@
 # Song's publication year recognizer from audio track's features
-Data analytics' course project (a.a. 2023/2024) repository. 
-## Task: regression. 
-## Goal: recognize the year in which a song was published from the features of its audio track. 
+Data Analytics' course project (a.a. 2023/2024) repository. 
+## Task:
+ <b> Regression </b>. 
 
-### Input Variables: n audio features of a song. 
+## Goal:
+recognize the <em> year </em> in which a song was published from the features of its audio track. 
 
-### Output Variable: year the song was released.
+### Input Variables:
+ <b>n</b> audio features of a song. 
+
+### Output Variable:
+ <em>year</em> the song was released.
+
