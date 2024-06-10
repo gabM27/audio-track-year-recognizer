@@ -1,0 +1,13 @@
+
+%pip install -U pytorch_tabular
+
+%pip uninstall tensorflow tensorflow-intel tensorboard -y
+
+%pip install -U seaborn
+%pip install --upgrade keras
+%pip install --upgrade tensorflow
+%pip install tensorflow-intel==2.16.1
+%pip install tensorboard==2.16.0
+#%pip install torch torchvision torchaudio #Only CPU
+%pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118 #CUDA 11.8
+%pip install --upgrade Pillow
