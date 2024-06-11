@@ -1,3 +1,14 @@
+##---------- IMPORT LIBRERIE ----------
+import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.linear_model import LinearRegression
+from sklearn.svm import SVR
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import mean_absolute_percentage_error
+from sklearn.metrics import r2_score
+import pickle
+
 ''' 
  Codice che implementa 4 funzioni Python:
     1. getName() --> restituisce un identificativo dello studente o del gruppo.
@@ -83,7 +94,17 @@ def preprocess(df, clfName):
     # assumo che la tecnica di preprocess sia diversa differenziando le reti neurali dalle altre tecniche
     if clfName in ['LR', 'RF', 'KNR', 'SVR']:
         # Implementare il pre-processing specifico
-        
+        #Carico il dataset
+        X=df[df.columns[1:]]
+        Y=df[df.columns[:1]]
+
+        # load the scaler
+        scaler = []
+        with open("../pickle_saves/models/minMaxScaler.save", "rb") as file:
+            scaler = pickle.load(file)
+
+        X = pd.DataFrame(scaler.transform(X))
+        dfNew = pd.concat([X, Y], axis = 1)
         pass #da togliere quando si implementerà il resto
         
     elif clfName in ['FF', 'TB', 'TF']:
@@ -95,7 +116,7 @@ def preprocess(df, clfName):
         raise ValueError("Stringa che identifica la tecnica di ML da utilizzare NON identificata.\nRiprovare con una tra le seguenti:'LR', 'RF', 'KNR', 'SVR', 'FF', 'TB', 'TF'.")
 
     # Ritorna il DataFrame pre-processato
-    return df
+    return dfNew
 
 
 ##############################################################################
@@ -110,7 +131,9 @@ def load(clfName):
     
     if clfName == 'LR':
         # TODO return LinearRegression()
-         pass #da togliere quando si implementerà il resto
+         lr=pickle.load(open('../pickle_saves/models/linearReg.save','rb'))
+         return lr
+    
     elif clfName == 'RF':
         # TODO return RandomForestRegressor()
          pass #da togliere quando si implementerà il resto
