@@ -119,8 +119,7 @@ def load(clfName):
     # Se non abbiamo implementato un algoritmo, dobbiamo ritornare None anche in quel caso.
    
     if clfName == 'LR':
-         model=pickle.load(open("../pickle_saves/models/linearReg.save", 'rb'))
-         pass #da togliere quando si implementerà il resto
+         model=pickle.load(open("../pickle_saves/models/LR.save", 'rb'))
     elif clfName == 'RF':
         model=pickle.load(open("../pickle_saves/models/RFR.save", 'rb'))
          #pass #da togliere quando si implementerà il resto
@@ -153,6 +152,10 @@ def predict(df, clfName, clf):
     X=df[df.columns[1:]]
     y=df[df.columns[:1]]
 
+    # per fixare errore: TypeError: Feature names are only supported if all input features have string names, 
+    # but your input has ['int', 'str'] as feature name / column name types. 
+    # If you want feature names to be stored and validated, you must convert them all to strings, by using X.columns = X.columns.astype(str) for example. 
+    # Otherwise you can remove feature / column names from your input data, or convert them all to a non-string data t
     X.columns=X.columns.astype(str)
 
     # TODO esecuzione del modello di machine learning sui dati di test preprocessati
@@ -192,8 +195,8 @@ def predict(df, clfName, clf):
 
 
 def main():
-    FILENAME = "../data.zip"
-    CLF_NAME_LIST = [ "LR", "RF","TB" ]
+    FILENAME = '../data.zip'
+    CLF_NAME_LIST = ["LR"]
     df = pd.read_csv(FILENAME)
 
     #Esecuzione degli algoritmi
