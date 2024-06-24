@@ -1,0 +1,14 @@
+###### Requirements with Version Specifiers ######
+seaborn==0.13.2 
+keras==3.3.3
+tensorflow==2.16.1
+tensorflow-intel==2.16.1
+tensorboard==2.16.1
+pytorch_tabular>=1.1.0
+pytorch-tabnet>=1.1.0
+tab-transformer-pytorch>=0.3.0
+#--find-links https://download.pytorch.org/whl/cu118
+torch>=2.3.1
+torchvision>=0.18.1 
+torchaudio>=2.3.1
+Pillow>=10.3.0
