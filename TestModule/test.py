@@ -1,5 +1,3 @@
-##---------- IMPORT LIBRERIE ----------
-import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.linear_model import LinearRegression
 from sklearn.svm import SVR
@@ -8,7 +6,7 @@ from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_absolute_percentage_error
 from sklearn.metrics import r2_score
 import pickle
-
+import pandas as pd
 ''' 
  Codice che implementa 4 funzioni Python:
     1. getName() --> restituisce un identificativo dello studente o del gruppo.
@@ -92,28 +90,19 @@ def preprocess(df, clfName):
     # Applica il pre-processing ai dati di test in base al regressore scelto
     # In questo caso, che è solo un esempio di come potremmo implementare la funzione preprocess, 
     # assumo che la tecnica di preprocess sia diversa differenziando le reti neurali dalle altre tecniche
-    if clfName in ['LR', 'RF', 'KNR', 'SVR']:
-        # Implementare il pre-processing specifico
-        #Carico il dataset
-        X=df[df.columns[1:]]
-        Y=df[df.columns[:1]]
 
-        # load the scaler
-        scaler = []
-        with open("../pickle_saves/models/minMaxScaler.save", "rb") as file:
-            scaler = pickle.load(file)
+    X=df.iloc[:,1:]
+    y=df.iloc[:,0]
 
-        X = pd.DataFrame(scaler.transform(X))
-        dfNew = pd.concat([X, Y], axis = 1)
-        pass #da togliere quando si implementerà il resto
-        
-    elif clfName in ['FF', 'TB', 'TF']:
-        # Implementare il pre-processing specifico 
-        
-        pass #da togliere quando si implementerà il resto
-    else:
-        
-        raise ValueError("Stringa che identifica la tecnica di ML da utilizzare NON identificata.\nRiprovare con una tra le seguenti:'LR', 'RF', 'KNR', 'SVR', 'FF', 'TB', 'TF'.")
+    if clfName in ['LR', 'RF', 'KNR', 'SVR','TB','TF']:
+        scaler = pickle.load(open("../pickle_saves/preprocess/minMaxScaler.save", 'rb'))
+    elif clfName in ['FF']:
+        scaler = pickle.load(open("../pickle_saves/preprocess/pca.save", 'rb'))
+    else: 
+        return None
+    
+    X = pd.DataFrame(scaler.transform(X))
+    dfNew = pd.concat([X, y], axis = 1)
 
     # Ritorna il DataFrame pre-processato
     return dfNew
@@ -128,30 +117,30 @@ def load(clfName):
     # ATTENZIONE: bisogna caricare gli algoritmi con gli iperparametri determinati nella fase di training
     
     # Se non abbiamo implementato un algoritmo, dobbiamo ritornare None anche in quel caso.
-    
+   
     if clfName == 'LR':
-        # TODO return LinearRegression()
-         lr=pickle.load(open('../pickle_saves/models/linearReg.save','rb'))
-         return lr
-    
+         model=pickle.load(open("../pickle_saves/models/linearReg.save", 'rb'))
+         pass #da togliere quando si implementerà il resto
     elif clfName == 'RF':
-        # TODO return RandomForestRegressor()
-         pass #da togliere quando si implementerà il resto
+        model=pickle.load(open("../pickle_saves/models/RFR.save", 'rb'))
+         #pass #da togliere quando si implementerà il resto
     elif clfName == 'KNR':
-        # TODO return KNeighborsRegressor()
-         pass #da togliere quando si implementerà il resto
+        model=pickle.load(open("../pickle_saves/models/KNN.save", 'rb'))
     elif clfName == 'SVR':
-        # TODO return SVR()
-         pass #da togliere quando si implementerà il resto
+        model=pickle.load(open("../pickle_saves/models/SVR.save", 'rb'))
     elif clfName == 'FF':
-        # TODO return MLPRegressor()
-         pass #da togliere quando si implementerà il resto
-    elif clfName in ['TB', 'TF']:
-        # TODO return TabNetRegressor()
-         pass #da togliere quando si implementerà il resto
+        return None
+    elif clfName == 'TB':
+        # Caricamento del modello TabNet
+        with open('../pickle_saves/models/tabular_model.save', 'rb') as f:
+            model = pickle.load(f)
+    elif clfName == 'TF':
+        return None
     else:
         # Ritorna None se l'algoritmo non è stato implementato
-        return None        
+        return None
+    
+    return model   
 
 
 
@@ -159,15 +148,37 @@ def load(clfName):
 # versione iniziale, da cambiare
 
 def predict(df, clfName, clf):
-    # TODO esecuzione del modello di machine learning sui dati di test preprocessati
 
-    # TODO predizione
-    
-    # TODO calcolo delle metriche di prestazione
-    mse = 'qualcosa'
-    mae = 'qualcosa1'
-    mape = 'qualcosa2'
-    r2 = 'qualcosa3'
+    #Divisione dataset X, y_true
+    X=df[df.columns[1:]]
+    y=df[df.columns[:1]]
+
+    X.columns=X.columns.astype(str)
+
+    # TODO esecuzione del modello di machine learning sui dati di test preprocessati
+    if clfName == 'LR':
+        ypred=clf.predict(X)
+    if clfName == 'RF':
+        ypred=clf.predict(X)
+    if clfName == 'KNR':
+        ypred=clf.predict(X)
+    if clfName == 'SVR':
+        ypred=clf.predict(X)
+    if clfName == 'FF':
+        ypred=clf.predict(X)
+    if clfName == 'TB':
+        X=pd.DataFrame(X, columns=X.columns)
+        X['Year']=y.values
+        pred_df=clf.predict(X)
+        ypred = pred_df['Year_prediction']
+    if clfName == 'TF':
+        ypred=clf.predict(X)
+
+    #calcolo delle metriche
+    mse = mean_squared_error(y, ypred)
+    mae = mean_absolute_error(y, ypred)
+    mape = mean_absolute_percentage_error(y, ypred)
+    r2 = r2_score(y, ypred)
 
     # Ritorna un dizionario contenente le metriche di prestazione
     performance_metrics = {
@@ -178,3 +189,20 @@ def predict(df, clfName, clf):
     }
 
     return performance_metrics
+
+
+def main():
+    FILENAME = "../data.zip"
+    CLF_NAME_LIST = [ "LR", "RF","TB" ]
+    df = pd.read_csv(FILENAME)
+
+    #Esecuzione degli algoritmi
+    for modelName in CLF_NAME_LIST:
+        dfProcessed = preprocess(df, modelName)
+        clf = load(modelName)
+        perf = predict(dfProcessed, modelName, clf)
+        print("RESULT team: "+str(getName())+" algoName: "+ modelName + " perf: "+ str(perf))
+
+
+if __name__ == "__main__":
+    main()
