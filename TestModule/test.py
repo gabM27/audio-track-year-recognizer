@@ -94,18 +94,26 @@ def preprocess(df, clfName):
     X=df.iloc[:,1:]
     y=df.iloc[:,0]
 
-    if clfName in ['LR', 'RF', 'KNR', 'SVR','TB','TF']:
-        scaler = pickle.load(open("../pickle_saves/preprocess/minMaxScaler.save", 'rb'))
-    elif clfName in ['FF']:
-        scaler = pickle.load(open("../pickle_saves/preprocess/pca.save", 'rb'))
-    else: 
-        return None
+    try:
+        if clfName in ['LR', 'RF', 'KNR', 'SVR', 'TB', 'TF']:
+            scaler = pickle.load(open("../pickle_saves/preprocess/minMaxScaler.save", 'rb'))
+        elif clfName in ['FF']:
+            scaler = pickle.load(open("../pickle_saves/preprocess/pca.save", 'rb'))
+        else:
+            raise ValueError(f"Classifier name {clfName} is not supported")
     
-    X = pd.DataFrame(scaler.transform(X))
-    dfNew = pd.concat([X, y], axis = 1)
+        X = pd.DataFrame(scaler.transform(X))
+        dfNew = pd.concat([y, X], axis=1) # ERRORE ERA QUI' --> HO INVERTITO X e y
 
-    # Ritorna il DataFrame pre-processato
-    return dfNew
+        # Ritorna il DataFrame pre-processato
+        return dfNew
+
+    except FileNotFoundError as e:
+        print(f"Error: {e}")
+        return None
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        return None
 
 
 ##############################################################################
