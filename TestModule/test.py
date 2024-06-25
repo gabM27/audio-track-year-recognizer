@@ -7,6 +7,7 @@ from sklearn.metrics import mean_absolute_percentage_error
 from sklearn.metrics import r2_score
 import pickle
 import pandas as pd
+import torch
 ''' 
  Codice che implementa 4 funzioni Python:
     1. getName() --> restituisce un identificativo dello studente o del gruppo.
@@ -127,27 +128,26 @@ def load(clfName):
     # Se non abbiamo implementato un algoritmo, dobbiamo ritornare None anche in quel caso.
    
     if clfName == 'LR':
-         model=pickle.load(open("../pickle_saves/models/LR.save", 'rb'))
+         clf=pickle.load(open("../pickle_saves/models/LR.save", 'rb'))
     elif clfName == 'RF':
         model=pickle.load(open("../pickle_saves/models/RFR.save", 'rb'))
          #pass #da togliere quando si implementerà il resto
     elif clfName == 'KNR':
         model=pickle.load(open("../pickle_saves/models/KNN.save", 'rb'))
     elif clfName == 'SVR':
-        model=pickle.load(open("../pickle_saves/models/SVR.save", 'rb'))
+        clf=pickle.load(open("../pickle_saves/models/SVR.save", 'rb'))
     elif clfName == 'FF':
         return None
     elif clfName == 'TB':
         # Caricamento del modello TabNet
-        with open('../pickle_saves/models/tabular_model.save', 'rb') as f:
-            model = pickle.load(f)
+         clf = torch.load("../pickle_saves/models/TB.save", map_location=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
     elif clfName == 'TF':
         return None
     else:
         # Ritorna None se l'algoritmo non è stato implementato
         return None
     
-    return model   
+    return clf   
 
 
 
@@ -164,7 +164,7 @@ def predict(df, clfName, clf):
     # but your input has ['int', 'str'] as feature name / column name types. 
     # If you want feature names to be stored and validated, you must convert them all to strings, by using X.columns = X.columns.astype(str) for example. 
     # Otherwise you can remove feature / column names from your input data, or convert them all to a non-string data t
-    X.columns=X.columns.astype(str)
+    #X.columns=X.columns.astype(str)
 
     # TODO esecuzione del modello di machine learning sui dati di test preprocessati
     if clfName == 'LR':
@@ -178,9 +178,7 @@ def predict(df, clfName, clf):
     if clfName == 'FF':
         ypred=clf.predict(X)
     if clfName == 'TB':
-        X=pd.DataFrame(X, columns=X.columns)
-        X['Year']=y.values
-        pred_df=clf.predict(X)
+        pred_df=clf.predict(df)
         ypred = pred_df['Year_prediction']
     if clfName == 'TF':
         ypred=clf.predict(X)
@@ -204,7 +202,7 @@ def predict(df, clfName, clf):
 
 def main():
     FILENAME = '../data.zip'
-    CLF_NAME_LIST = ["LR"]
+    CLF_NAME_LIST = ["LR","RF","KNR","SVR","FF","TB","TF"]
     df = pd.read_csv(FILENAME)
 
     #Esecuzione degli algoritmi
