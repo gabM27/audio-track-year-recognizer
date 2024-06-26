@@ -5,9 +5,18 @@ from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_absolute_percentage_error
 from sklearn.metrics import r2_score
+
 import pickle
 import pandas as pd
 import torch
+
+import sys
+import os
+# Aggiungi il percorso della directory 'models'
+sys.path.append(os.path.abspath(os.path.join(os.getcwd(), '../TrainingModule')))
+
+from feedforward import FeedForward, MyDataset, test_model
+
 ''' 
  Codice che implementa 4 funzioni Python:
     1. getName() --> restituisce un identificativo dello studente o del gruppo.
@@ -98,13 +107,24 @@ def preprocess(df, clfName):
     try:
         if clfName in ['LR', 'RF', 'KNR', 'SVR', 'TB', 'TF']:
             scaler = pickle.load(open("../pickle_saves/preprocess/minMaxScaler.save", 'rb'))
+            X = pd.DataFrame(scaler.transform(X))
+
+            dfNew = pd.concat([y, X], axis=1)
+
         elif clfName in ['FF']:
-            scaler = pickle.load(open("../pickle_saves/preprocess/pca.save", 'rb'))
+            scaler = pickle.load(open("../pickle_saves/preprocess/minMaxScaler.save", 'rb'))
+            pca_scaler = pickle.load(open("../pickle_saves/preprocess/pca.save", 'rb'))
+
+            X = scaler.transform(X)
+            X = pca_scaler.transform(X)
+
+            dfNew = MyDataset(X, y)
+
         else:
             raise ValueError(f"Classifier name {clfName} is not supported")
     
-        X = pd.DataFrame(scaler.transform(X))
-        dfNew = pd.concat([y, X], axis=1) # ERRORE ERA QUI' --> HO INVERTITO X e y
+        
+        # dfNew = pd.concat([y, X], axis=1)
 
         # Ritorna il DataFrame pre-processato
         return dfNew
@@ -137,7 +157,26 @@ def load(clfName):
     elif clfName == 'SVR':
         clf=pickle.load(open("../pickle_saves/models/SVR.save", 'rb'))
     elif clfName == 'FF':
-        return None
+        
+        checkpoint = torch.load('../pickle_saves/models/FF.save')
+        best_params = checkpoint['params']
+        # Create a new model instance with the best parameters
+        clf = FeedForward(
+            52, # applichiamo PCA con 52 n_components
+            best_params['hidden_size1'], 
+            best_params['hidden_size2'], 
+            best_params['hidden_size3'], 
+            best_params['hidden_size4'], 
+            best_params['hidden_size5'], 
+            best_params['hidden_size6'], 
+            best_params['hidden_size7'], 
+            best_params['hidden_size8'], 
+            best_params['negative_slope']
+        )
+
+        clf.load_state_dict(checkpoint['model_state_dict'])
+        clf.to(torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
+
     elif clfName == 'TB':
         # Caricamento del modello TabNet
         clf = torch.load("../pickle_saves/models/TB.save", map_location=torch.device('cuda' if torch.cuda.is_available() else 'cpu')) 
@@ -156,9 +195,10 @@ def load(clfName):
 
 def predict(df, clfName, clf):
 
-    #Divisione dataset X, y_true
-    X=df[df.columns[1:]]
-    y=df[df.columns[:1]]
+    if (clfName != "FF"):
+        #Divisione dataset X, y_true
+        X=df[df.columns[1:]]
+        y=df[df.columns[:1]]
 
     # per fixare errore: TypeError: Feature names are only supported if all input features have string names, 
     # but your input has ['int', 'str'] as feature name / column name types. 
@@ -176,7 +216,7 @@ def predict(df, clfName, clf):
     if clfName == 'SVR':
         ypred=clf.predict(X)
     if clfName == 'FF':
-        ypred=clf.predict(X)
+        y, ypred = test_model(clf, df,torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
     if clfName == 'TB':
         pred_df=clf.predict(df)
         ypred = pred_df['Year_prediction']
