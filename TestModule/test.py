@@ -140,7 +140,7 @@ def load(clfName):
         return None
     elif clfName == 'TB':
         # Caricamento del modello TabNet
-         clf = torch.load("../pickle_saves/models/TB.save", map_location=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
+        clf = torch.load("../pickle_saves/models/TB.save", map_location=torch.device('cuda' if torch.cuda.is_available() else 'cpu')) 
     elif clfName == 'TF':
         return None
     else:
@@ -200,18 +200,18 @@ def predict(df, clfName, clf):
     return performance_metrics
 
 
-def main():
-    FILENAME = '../data.zip'
-    CLF_NAME_LIST = ["LR","RF","KNR","SVR","FF","TB","TF"]
-    df = pd.read_csv(FILENAME)
+# def main():
+#     FILENAME = '../data.zip'
+#     CLF_NAME_LIST = ["LR","RF","KNR","SVR","FF","TB","TF"]
+#     df = pd.read_csv(FILENAME)
 
-    #Esecuzione degli algoritmi
-    for modelName in CLF_NAME_LIST:
-        dfProcessed = preprocess(df, modelName)
-        clf = load(modelName)
-        perf = predict(dfProcessed, modelName, clf)
-        print("RESULT team: "+str(getName())+" algoName: "+ modelName + " perf: "+ str(perf))
+#     #Esecuzione degli algoritmi
+#     #for modelName in CLF_NAME_LIST:
+#     dfProcessed = preprocess(df, modelName)
+#     clf = load(modelName)
+#     perf = predict(dfProcessed, modelName, clf)
+#     print("RESULT team: "+str(getName())+" algoName: "+ modelName + " perf: "+ str(perf))
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
