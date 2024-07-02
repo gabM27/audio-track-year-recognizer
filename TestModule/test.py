@@ -5,13 +5,15 @@ from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_absolute_percentage_error
 from sklearn.metrics import r2_score
-
+from torch.utils.data import DataLoader
 import pickle
 import pandas as pd
 import torch
 
 import sys
 import os
+
+
 # Aggiungi il percorso della directory 'models'
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), '../TrainingModule')))
 
@@ -101,33 +103,34 @@ def preprocess(df, clfName):
     # In questo caso, che è solo un esempio di come potremmo implementare la funzione preprocess, 
     # assumo che la tecnica di preprocess sia diversa differenziando le reti neurali dalle altre tecniche
 
+
     X=df.iloc[:,1:]
     y=df.iloc[:,0]
+    dfNew=pd.DataFrame()
 
     try:
         if clfName in ['LR', 'RF', 'KNR', 'SVR', 'TB', 'TF']:
             scaler = pickle.load(open("../pickle_saves/preprocess/minMaxScaler.save", 'rb'))
             X = pd.DataFrame(scaler.transform(X))
 
-            dfNew = pd.concat([y, X], axis=1)
-
-        elif clfName in ['FF']:
+            dfNew = pd.concat([y, X],axis=1)
+            dfNew.columns=df.columns
+            
+            
+        if  clfName in ['FF']: # Applico sia MinMaxScaling che PCA
             scaler = pickle.load(open("../pickle_saves/preprocess/minMaxScaler.save", 'rb'))
             pca_scaler = pickle.load(open("../pickle_saves/preprocess/pca.save", 'rb'))
 
             X = scaler.transform(X)
-            X = pca_scaler.transform(X)
-
-            dfNew = MyDataset(X, y)
-
+            X= pd.DataFrame(pca_scaler.transform(X))
+            
+            #garantisce che il numero di colonne nel DataFrame dfNew sia corretto dopo l'applicazione della PCA. 
+            dfNew = pd.concat([y.reset_index(drop=True), X.reset_index(drop=True)], axis=1)
+            
         else:
-            raise ValueError(f"Classifier name {clfName} is not supported")
-    
+            raise ValueError(f"preprocess name {clfName} is not supported")
         
-        # dfNew = pd.concat([y, X], axis=1)
-
-        # Ritorna il DataFrame pre-processato
-        return dfNew
+        
 
     except FileNotFoundError as e:
         print(f"Error: {e}")
@@ -135,6 +138,8 @@ def preprocess(df, clfName):
     except Exception as e:
         print(f"Unexpected error: {e}")
         return None
+    
+    return dfNew
 
 
 ##############################################################################
@@ -150,14 +155,13 @@ def load(clfName):
     if clfName == 'LR':
          clf=pickle.load(open("../pickle_saves/models/LR.save", 'rb'))
     elif clfName == 'RF':
-        model=pickle.load(open("../pickle_saves/models/RFR.save", 'rb'))
+        clf=pickle.load(open("../pickle_saves/models/RFR.save", 'rb'))
          #pass #da togliere quando si implementerà il resto
     elif clfName == 'KNR':
-        model=pickle.load(open("../pickle_saves/models/KNN.save", 'rb'))
+        clf=pickle.load(open("../pickle_saves/models/KNR.save", 'rb'))
     elif clfName == 'SVR':
         clf=pickle.load(open("../pickle_saves/models/SVR.save", 'rb'))
     elif clfName == 'FF':
-        
         checkpoint = torch.load('../pickle_saves/models/FF.save')
         best_params = checkpoint['params']
         # Create a new model instance with the best parameters
@@ -179,7 +183,8 @@ def load(clfName):
 
     elif clfName == 'TB':
         # Caricamento del modello TabNet
-        clf = torch.load("../pickle_saves/models/TB.save", map_location=torch.device('cuda' if torch.cuda.is_available() else 'cpu')) 
+        #clf = torch.load("../pickle_saves/models/TB.save", map_location=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
+        clf=pickle.load(open("../pickle_saves/models/TB.save", 'rb'))
     elif clfName == 'TF':
         return None
     else:
@@ -194,11 +199,17 @@ def load(clfName):
 # versione iniziale, da cambiare
 
 def predict(df, clfName, clf):
+    
 
-    if (clfName != "FF"):
+    # if (clfName != "FF"):
         #Divisione dataset X, y_true
-        X=df[df.columns[1:]]
-        y=df[df.columns[:1]]
+    X=df[df.columns[1:]]
+    y=df[df.columns[:1]]
+
+    # print(X.values)
+
+
+        #print(df)
 
     # per fixare errore: TypeError: Feature names are only supported if all input features have string names, 
     # but your input has ['int', 'str'] as feature name / column name types. 
@@ -208,15 +219,17 @@ def predict(df, clfName, clf):
 
     # TODO esecuzione del modello di machine learning sui dati di test preprocessati
     if clfName == 'LR':
-        ypred=clf.predict(X)
+        ypred=clf.predict(X.values)
     if clfName == 'RF':
-        ypred=clf.predict(X)
+        ypred=clf.predict(X.values)
     if clfName == 'KNR':
-        ypred=clf.predict(X)
+        ypred=clf.predict(X.values)
     if clfName == 'SVR':
-        ypred=clf.predict(X)
+        ypred=clf.predict(X.values)
     if clfName == 'FF':
-        y, ypred = test_model(clf, df,torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
+        dataset = MyDataset(X.values, y)
+        data_loader= DataLoader(dataset)
+        y, ypred = test_model(clf, data_loader ,torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
     if clfName == 'TB':
         pred_df=clf.predict(df)
         ypred = pred_df['Year_prediction']
@@ -240,18 +253,18 @@ def predict(df, clfName, clf):
     return performance_metrics
 
 
-# def main():
-#     FILENAME = '../data.zip'
-#     CLF_NAME_LIST = ["LR","RF","KNR","SVR","FF","TB","TF"]
-#     df = pd.read_csv(FILENAME)
+def main():
+    FILENAME = '../TrainingModule/data.zip'
+    CLF_NAME_LIST = ['FF'] #"FF"
+    df = pd.read_csv(FILENAME)
 
-#     #Esecuzione degli algoritmi
-#     #for modelName in CLF_NAME_LIST:
-#     dfProcessed = preprocess(df, modelName)
-#     clf = load(modelName)
-#     perf = predict(dfProcessed, modelName, clf)
-#     print("RESULT team: "+str(getName())+" algoName: "+ modelName + " perf: "+ str(perf))
+    #Esecuzione degli algoritmi
+    for modelName in CLF_NAME_LIST:
+        dfProcessed = preprocess(df, modelName)
+        clf = load(modelName)
+        perf = predict(dfProcessed, modelName, clf)
+        print("RESULT team: "+str(getName())+" algoName: "+ modelName + " perf: "+ str(perf))
 
 
-# if __name__ == "__main__":
-#     main()
+if __name__ == "__main__":
+    main()
