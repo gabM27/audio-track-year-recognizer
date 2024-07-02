@@ -1,8 +1,15 @@
 ###### Requirements with Version Specifiers ######
-seaborn==0.13.2 
+scikit-learn==1.5.0
+scipy==1.13.1
+pandas==2.2.2
+numpy==1.26.4
+seaborn==0.13.2
+matplotlib==3.9.0
 keras==3.3.3
 tensorflow==2.16.1
 tensorflow-intel==2.16.1
+tensorflow-io==0.31.0
+tensorflow-io-gcs-filesystem==0.31.0
 tensorboard==2.16.1
 pytorch_tabular>=1.1.0
 pytorch-tabnet>=1.1.0
