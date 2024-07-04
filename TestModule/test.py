@@ -169,7 +169,7 @@ def load(clfName):
             52, # applichiamo PCA con 52 n_components
             best_params['hidden_size1'], 
             best_params['hidden_size2'], 
-            best_params['hidden_size3'], 
+            best_params['hidden_size3'],  
             best_params['hidden_size4'], 
             best_params['hidden_size5'], 
             best_params['hidden_size6'], 
@@ -186,7 +186,7 @@ def load(clfName):
         #clf = torch.load("../pickle_saves/models/TB.save", map_location=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
         clf=pickle.load(open("../pickle_saves/models/TB.save", 'rb'))
     elif clfName == 'TF':
-        return None
+         clf=pickle.load(open("../pickle_saves/models/TT/model.ckpt", 'rb'))
     else:
         # Ritorna None se l'algoritmo non è stato implementato
         return None
@@ -254,7 +254,7 @@ def predict(df, clfName, clf):
 
 
 def main():
-    FILENAME = '../TrainingModule/data.zip'
+    FILENAME = 'data.zip'
     CLF_NAME_LIST = ['FF'] #"FF"
     df = pd.read_csv(FILENAME)
 
