@@ -184,10 +184,9 @@ def predict(df, clfName, clf):
 #     CLF_NAME_LIST = ['LR','RF','KNR','SVR','FF','TB','TF']
 #     df_test = pd.read_csv(FILENAME)
 
-#     df_test2 = df_test.head(100)
 #     #Esecuzione degli algoritmi
 #     for clfName in CLF_NAME_LIST:
-#         dfProcessed = preprocess(df_test2, clfName)
+#         dfProcessed = preprocess(df_test, clfName)
 #         clf = load(clfName)
 #         perf = predict(dfProcessed, clfName, clf)
 #         print("RESULT team: "+str(getName())+" algoName: "+ clfName + " perf: "+ str(perf))
